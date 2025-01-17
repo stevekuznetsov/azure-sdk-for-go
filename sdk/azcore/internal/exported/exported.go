@@ -71,6 +71,10 @@ type TokenRequestOptions struct {
 	// TenantID identifies the tenant from which to request the token. azidentity credentials authenticate in
 	// their configured default tenants when this field isn't set.
 	TenantID string
+
+	// AuthenticationEndpoint is an optional override for the endpoint used to request tokens. azidentity credentials
+	// authenticate in the default central endpoints for the respective regions when this field isn't set.
+	AuthenticationEndpoint string
 }
 
 // TokenCredential represents a credential capable of providing an OAuth token.

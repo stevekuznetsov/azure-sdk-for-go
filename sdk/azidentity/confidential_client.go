@@ -126,7 +126,7 @@ func (c *confidentialClient) client(tro policy.TokenRequestOptions) (msalConfide
 	defer c.clientMu.Unlock()
 	if tro.EnableCAE {
 		if c.cae == nil {
-			client, err := c.newMSALClient(true)
+			client, err := c.newMSALClient(true, tro.AuthorityHost)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -135,7 +135,7 @@ func (c *confidentialClient) client(tro policy.TokenRequestOptions) (msalConfide
 		return c.cae, c.caeMu, nil
 	}
 	if c.noCAE == nil {
-		client, err := c.newMSALClient(false)
+		client, err := c.newMSALClient(false, tro.AuthorityHost)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -144,12 +144,16 @@ func (c *confidentialClient) client(tro policy.TokenRequestOptions) (msalConfide
 	return c.noCAE, c.noCAEMu, nil
 }
 
-func (c *confidentialClient) newMSALClient(enableCAE bool) (msalConfidentialClient, error) {
+func (c *confidentialClient) newMSALClient(enableCAE bool, host string) (msalConfidentialClient, error) {
 	cache, err := internal.ExportReplace(c.opts.Cache, enableCAE)
 	if err != nil {
 		return nil, err
 	}
-	authority := runtime.JoinPaths(c.host, c.tenantID)
+	authorityHost := c.host
+	if host != "" {
+		authorityHost = host
+	}
+	authority := runtime.JoinPaths(authorityHost, c.tenantID)
 	o := []confidential.Option{
 		confidential.WithAzureRegion(c.region),
 		confidential.WithCache(cache),
